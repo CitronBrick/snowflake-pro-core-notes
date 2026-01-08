@@ -95,3 +95,49 @@ Temporarily allow locked out user w/o MFA (in minutes)
 3. User selects Snowflake application
 4. IdP sends SAML response to Snowflake
 5. Snowflake initiates session
+
+### Logout
+
+#### Standard Logout
+
+* requires users to explicitly logout of IdP **and** Snowflake
+* all IdPs support standard logout
+
+#### Global Logout
+
+* logout of IdP & all its Snowflake session
+* IdP dependant support
+
+
+## Key pair authentication
+
+* min length of RSA pair: 2048
+* encrypted private keys are better than unencyrpted private keys
+* Key generation algos
+	* RSA algos
+		* RS256
+		* RS384
+		* RS512
+	* Elliptic Curve Digital Signature Algorithms (ECDSA)
+		* ES256
+		* ES384
+		* ES512
+* Hash algos
+	* SHA-256
+	* SHA-384
+	* SHA-512
+1. Generate private key
+	* `openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out rsa_key.p8`
+	* add `-nocrypt* to above command to generate .pem without encryption`
+2. Generate public key
+	* `openssl rsa -in rsa_key.p8 -pubout -out rsa_key.pub`
+3. Store private & public keys securely, using file permissions
+
+## Grant public key to a user
+
+* The following privileges are needed to assign a public key to a user
+	* `MODIFY PROGRAMMATIC AUTHENTICATION METHODS` on user
+	* `OWNERSHIP` on user
+* `GRAMT MODIFY PROGRAMMATIC AUTHENTICATION METHODS ON USER my_service_user TO ROLE my_service_owner_role`
+
+* `ALTER USER SET RSA_PUBLIC_KEY='slfjwoei';`
