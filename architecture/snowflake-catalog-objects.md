@@ -50,3 +50,26 @@
 | Permanent (EE+)| Until explicitly dropped 		| Temporary, Transient, Permanent 	| 0 - 90 						| 7 						|
 
 
+## View types 
+
+* Materialized : query expression whose results are stored
+* Non-materialized: query expression which is recalculated each tiem it's referenced
+	* Recursive : refers to itself
+	* Temporary : `TEMP`, `TEMPORARY`, `VOLATILE` : dropped at session end
+* Secure views
+	* can be Materialized or Non-materialized
+	* does not expose query to users
+	* `CREATE OR REPLACE`
+
+## Data types
+
+### Numeric Data Types
+
+* `NUMBER`, `DECIMAL`, `NUMERIC` :  (38,0)
+* `INT`, `INTEGER`, `BIGINT`, `SMALLINT`, `TINYINT`, `BYTEINT` : synonymous with `NUMBER` but no precision  / scale
+* `FLOAT`, `FLOAT4`, `FLOAT8`, `DOUBLE`, `DOUBLE PRECISION`, `REAL`
+* `DECFLOAT` : 38 significant digits of precision & dynamic base 10 exponent
+
+### String & Binary types
+
+* `VARCHAR` : default 2^24 size. max 2^27 size  
