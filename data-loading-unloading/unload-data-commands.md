@@ -71,7 +71,17 @@
 * `@[<namespace>.]<ext_stage_name>[/path]`
 * `@[<namespace>.]%<table_name>[/path]` 
 * `@~[/<path>]` : user stage
-* `VALIDATION_MODE` : `RETURN ROWS`
+* `VALIDATION_MODE` : `RETURN ROWS` (does **not copy** data, only validates)
+* `DATE_FORMAT`
+* `TIME_FORMAT`
+* `TIMESTAMP_FORMAT`
+* `ESCAPE`
+* `TRIM_SPACE`
+* `NULL_IF`
+* `REPLACE_INVALID_CHARACTERS`
+* `NULL_IF`
+* zip options
+* parse / skip header
 
 
 
