@@ -41,10 +41,37 @@
 	* named internal stage ( or user / table stage)
 	* named external stage
 	* external location
-* 
+* `VALIDATION_MODE`
+	* does **not load** data
+	* validates data
+	* not supported for Iceberg tables
+	* `RETURN_<n>_ROWS` : validates `n` rows & fails at 1st error
+	* `RETURN_ERRORS` : returns errors on files specified in `COPY INTO` command
+	* `RETURN_ALL_ERRORS` : returns errors on files specified in `COPY INTO` command, including partially loaded files
+		* partial loading happens due to loading with `ON ERROR` set to `CONTINUE`
+* `DATE_FORMAT`
+* `TIME_FORMAT`
+* `TIMESTAMP_FORMAT`
+* `ESCAPE`
+* `TRIM_SPACE`
+* `NULL_IF`
+* `REPLACE_INVALID_CHARACTERS`
+* `NULL_IF`
+* zip options
+* parse / skip header
 
 
 ## COPY INTO <location>
+
+* unload from table/query into files in 
+	* named internal stage
+	* named external stage
+	* external table
+* `@[<namespace>.]<int_stage_name>[/path]`
+* `@[<namespace>.]<ext_stage_name>[/path]`
+* `@[<namespace>.]%<table_name>[/path]` 
+* `@~[/<path>]` : user stage
+* `VALIDATION_MODE` : `RETURN ROWS`
 
 
 
