@@ -71,3 +71,32 @@ Schema: Table, View, Stage, Stored Procedure, UDF, Other schema objects
 
 * *pseudorole* granted to every user & role
 * can own securable objects, except they are accessible to everyone by definition 
+
+
+
+### Custom roles
+
+* custom account roles can be created by `USERADMIN` OR higher.
+* customer database roles can be created by the database owner
+* Nascent role has no user or role
+
+
+
+## Privileges
+
+* determine who can access & perform operations on securable objects
+* each object has set of privileges to be granted
+
+
+## Future Grants
+
+* define initial set of privileges on certain type of objects in a schema
+* these privileges are granted, on future nascent objects of that type, to the specified role
+
+``` 
+GRANT SELECT ON FUTURE TABLES IN SCHEMA s1 to ROLE r1
+GRANT SELECT ON ALL TABLES IN SCHEMA s1 to ROLE r1
+REVOKE SELECT ON FUTURE TABLES IN SCHEMA s1 to ROLE r1
+REVOKE SELECT ON ALL TABLES IN SCHEMA s1 to ROLE r1
+```
+
