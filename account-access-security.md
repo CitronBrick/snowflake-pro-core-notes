@@ -69,7 +69,7 @@ Temporarily allow locked out user w/o MFA (in minutes)
 		* Microsoft Entra ID
 		* OneLogin
 		* Ping Identity PingOne
-* Enables
+* Enables SSO
 	* login
 	* logout
 	* inactivity -> timeout
@@ -78,7 +78,7 @@ Temporarily allow locked out user w/o MFA (in minutes)
 	* ODBC
 	* Python
 
-### Login
+### Login with SSO
 	
 #### Snowflake initiated login
 
@@ -141,3 +141,19 @@ Temporarily allow locked out user w/o MFA (in minutes)
 * `GRAMT MODIFY PROGRAMMATIC AUTHENTICATION METHODS ON USER my_service_user TO ROLE my_service_owner_role`
 
 * `ALTER USER SET RSA_PUBLIC_KEY='slfjwoei';`
+
+## Verify user's public key's finger print
+
+```
+DESC USER example_user
+	--> SELECT SUBSTR(
+		(SELECT "value" from $1
+			WHERE "property" = 'RSA_PUBLIC_KEY_FP'), 
+		LEN('SHA256:') + 1) AS key;
+```
+
+```
+openssl rsa -pubin rsa_key.pub -outform DER | openssl dgst -sha256 -binary | openssl enc -base64
+```
+The outputs of the above 2 commands should match.
+```

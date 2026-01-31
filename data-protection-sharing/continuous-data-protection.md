@@ -133,3 +133,18 @@ Customer (Corporate Network) -> Snowflake Staging Area -> Snowflake (Snowflake V
 				* set `EXEMPT_OTHER_POLICIES=TRUE` on the masking policy of the `VALUE` column => overrides default inherited by Virtual columns.
 				* set different policy for Virtual column using `ALTER TABLE`
 
+
+
+## Replication and failover
+
+* Replication of *source account* objects -> 1+ *target accounts*
+* customers can replicate across all regions within in *region group*
+* to replicate across region groups, contact Snowflake Support
+* replication group : object collection in a source acocunt to be replicated 
+* failover group : replication group that can also failover
+	* secondary failover group in target account : read only access
+	* after being promoted to primary failover group : read-write access
+* to replicate git repo object replicate containing schema / database
+* Snowflake managed Iceberg tables
+	* replication : all accounts
+	* failover : BCE+

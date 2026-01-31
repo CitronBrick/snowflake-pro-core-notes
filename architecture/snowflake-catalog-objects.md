@@ -72,4 +72,73 @@
 
 ### String & Binary types
 
-* `VARCHAR` : default 2^24 size. max 2^27 size  
+* `VARCHAR`, `STRING`, `TEXT` : default 2^24 size. max 2^27 size  
+* `CHAR`, `CHARACTER`: same as `VARCHAR` but default size is 1
+* `BINARY`, `VARBINARY`
+
+### Boolean
+
+Only for accounts 20260125+
+
+### Date & time types
+
+* `DATE`
+* `TIME`
+* `DATETIME`, `TIMESTAMP`, `TIMESTAMP_NTZ`: no time zone (provided time zone ignored)
+* `TIMESTAMP_LTZ`: local time zone (provided time zone ignored)
+* `TIMESTAMP_TZ` : with time zone
+
+### Semi structured data types
+
+* `VARIANT`
+* `OBJECT`
+* `ARRAY`
+
+### Structured data types
+
+* `ARRAY`
+* `OBJECT`
+* `MAP`
+
+### Unstructured data type
+
+* `FILE`
+
+### Geospatial data types
+
+* `GEOGRAPHY`
+* `GEOMETRY`
+
+### Vector data type
+
+* `VECTOR`
+
+## User Defined Functions
+
+* extend built-in functions
+* `CREATE OR REPLACE FUNCTION`
+* must **return** value
+* can be written in 
+	* SQL
+	* Java
+	* Python
+	* Scala
+	* JavaScript
+* if a query calls a UDF to access staged files,
+	* and the query  SQL statement queries a view that calls any UDF/UDTF
+	* it fails with an user error
+* UDFS process files serially
+* `CURRENT_SCHEMA` & `CURRENT_DATABASE` in UDF refers to schema/database of UDF not session
+* if a query references staged files, that are modified/deleted during query run => error
+* handler code can be inline or staged
+* JavaScript & SQL must be inline
+
+
+## User Defined Table functions
+
+* UDFs that return a tabular value for each row
+* can process files in parallel
+
+## Stored Procedures
+
+* `CREATE OR REPLACE PROCEDURE`
