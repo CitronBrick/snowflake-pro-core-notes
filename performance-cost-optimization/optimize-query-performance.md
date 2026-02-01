@@ -31,9 +31,14 @@
 
 * Snowflake supports automatic clustering based on key (1 or more columns)
 * tables & materialized views can be clustered (**not hybrid tables**)
+* in `CREATE TABLE` or `ALTER TABLE` statement end with `CLUSTER BY`
+	* `CLUSTER BY (c1, c2)`
+	* `CLUSTER BY (to_date(c1), substring(c2, 0 , 0))`
+	* `CREATE TABLE T3 ( t timestamp, v variant) cluster by (v:"Data":id::number)`
 * **Clustering depth** : average depth (1+) of the overlapping micropartitions for specified columns. (0 for empty table)
 * Clustering depth is **not** an absolute way to check if table is well clustered. Query performance is.
 * System functions : `SYSTEM$CLUSTERING_DEPTH`, `SYSTEM$CLUSTERING_INFORMATION`
+* To drop: `ALTER TABLE t2 DROP CLUSTERING KEY`
 
 ### Clustering key
 
@@ -77,3 +82,53 @@
 		* substring
 	* Geospatial functions 
 * `ALTER TABLE my_table ADD SEARCH OPTIMIZATION`
+
+## Persisted Query Results
+
+* query results are cached for 24 hours
+* after query reuse, cached again for 24 hours (max 31 days since 1st query)
+* Security token
+	* Token provided by Snowflake Connector for Spark expires after 24 hr irrespective of cached results size
+	* access token for large results (> 100 kb) expires after 6 hr
+	* smaller results need no access token
+* if query is reused, no execution
+* Cache not hit if 
+	* queries have differences in uppercase/lowercase
+	* queries have different table aliases
+	* non-reusable functions are used : `UUID_STRING`, `RANDOM`, `RANDSTR`
+	* external functions are used
+	* **hybrid tables** are queried
+	* table data contributing to result has changed
+	* configuration options (affecting result production) have changed
+	* micro partitions have changed
+* Even if all above conditions are met, cache hit is still **not guaranteed**
+* Role to access cached results need below privileges:
+	* `SELECT` : role must have necessary access across all tables queried
+	* `SHOW` : role must match role that generated the cache results
+
+### Post-processing of query results
+
+* Needed when eg:
+	* you need to run q2 on top of pre-computed q1
+	* q1 is `SHOW`, `DESCRIBE`, `CALL` with a result that's not easy to reuse
+* Needed for stored procedure (not function !) inside a more complex SQL statement
+* Solutions : `RESULT_SCAN` or pipe operator `-->`
+* Eg: show tables that have 0 rows
+
+```
+
+SHOW TABLES;
+
+SELECT "schema_name", "name" as "table_name"
+FROM table(RESULT_SCAN(LAST_QUERY_ID()))
+WHERE rows = 0;
+```
+
+* Pipe operator avoids showing q1 results
+
+```
+SHOW TABLES
+	--> SELECT "schema_name", "name" as "table_name" 
+		FROM $1
+		WHERE rows = 0;
+```
