@@ -105,6 +105,8 @@
 * Role to access cached results need below privileges:
 	* `SELECT` : role must have necessary access across all tables queried
 	* `SHOW` : role must match role that generated the cache results
+* enabled by default
+* override by using `USED_CACHE_RESULT` paramter at  *account*, *user*, *session* level
 
 ### Post-processing of query results
 
