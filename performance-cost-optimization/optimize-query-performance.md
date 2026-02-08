@@ -134,3 +134,30 @@ SHOW TABLES
 		FROM $1
 		WHERE rows = 0;
 ```
+
+
+### Impact of different caching types
+
+#### Warehouse cache
+
+* running warehouse maintains cache of table data
+* accessible for queries running on the same warehouse
+
+
+```
+SELECT warehouse_name, count(*), sum(percentage_scanned_from_cache)
+FROM snowflake.account_usage.query_history
+WHERE start_time >= dateadd(month, -1, current_timestamp()) and bytes_scanned > 0
+GROUP BY 1 ORDER BY 3;
+```
+
+##### Auto-suspension of warehouses
+
+
+* cache deleted when warehouse is suspended 
+* Auto-suspension not recommended when running frequent small queries
+* Auto-suspension time limit guidelines
+	* tasks => immediate suspension
+	* DevOps, DataOps, Data Science => cache unimportant => 5min
+	* BI & `Select` => 10min+
+* a running warehouse consumes credits even while sitting idle
