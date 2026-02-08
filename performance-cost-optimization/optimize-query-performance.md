@@ -171,3 +171,4 @@ GROUP BY 1 ORDER BY 3;
 * used when `count`, `min`, `max` are run
 * not affected by table data changes
 * improves compile time for queries on commonly used tables
+* cf [https://snowflake.discourse.group/t/what-is-the-difference-between-metadata-cache-and-result-cache/2419/3](https://snowflake.discourse.group/t/what-is-the-difference-between-metadata-cache-and-result-cache/2419/3)
