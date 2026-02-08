@@ -138,6 +138,8 @@ SHOW TABLES
 
 ### Impact of different caching types
 
+##### Results Cache = see Persisted Query Results
+
 #### Warehouse cache
 
 * running warehouse maintains cache of table data
@@ -161,3 +163,11 @@ GROUP BY 1 ORDER BY 3;
 	* DevOps, DataOps, Data Science => cache unimportant => 5min
 	* BI & `Select` => 10min+
 * a running warehouse consumes credits even while sitting idle
+
+#### Metadata cache
+
+* Does not use warehouse
+* no time limit
+* used when `count`, `min`, `max` are run
+* not affected by table data changes
+* improves compile time for queries on commonly used tables
