@@ -193,9 +193,37 @@ as
 $$
 def run(session, from_table, to_table, count) {
 	session.table(from_table).limit(count).write.save_as_table(to_table)
+	return "SUCCESS"
 }
 $$;
 ```
 
+```
+CALL myProc('table_a', 'table_b', 5)
+```
 
 
+## Stream
+
+* records DML changes of tables
+* table stream tracks changes to rows in a *source table*
+* table stream makes a *change table* of what's changed => CDC 
+* streams can be created for 
+	* standard tables (including share tables)
+	* views (including secure views)
+	* Directory tables
+	* Dynamic tables
+	* Apache Iceberg tables (with limitations)
+	* Event tables
+	* External tables
+* does **not** contain table data
+* stores **offset** for source object & returns CDC records using versioning history
+* provides minimal changes between offset & current state version 
+
+### Stream limitations
+
+* Only *Insert-Only* streams for Apache Iceberg that use an External catalog (*Standard* & *Append-only* unsupported )
+* can't track changes on views with group by clauses
+* modifying column to be `NOT NULL` can cause stream queries to fail with stream returns NULL values. Current schema vs historical data
+* task triggered by stream on views, changes to tables will trigger task, irrespective of joins, aggregations or filters.
+* unsupported on partitioned external tables or partitioned Iceberg tables managed by external catalog

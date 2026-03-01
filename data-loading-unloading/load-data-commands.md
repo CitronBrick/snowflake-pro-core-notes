@@ -51,3 +51,22 @@ CREATE [OR REPLACE] [ { TEMP | TEMPORARY | VOLATILE}] FILE_FORMAT [ IF NOT EXIST
 	* trim
 	* empty field as null
 	* null_if
+
+
+## CREATE PIPE
+
+creates new pipe for defining the `COPY INTO <table>` statement used :
+	* by Snowpipe to load from ingestion queue
+	* or by Snowpipe streaming with high performance architecture to load directly from streaming source -> table
+
+```
+CREATE [OR REPLACE]  PIPE [IF NOT EXISTS] <name>
+	[AUTO_INGEST= [TRUE|FALSE]]
+	[ERROR_INTEGRATION=<integration_name>]
+	
+	[AWS_SNS_TOPIC='<topic>']
+	[INTEGRATION=<integration_name>]
+	[COMMENT = 'text']
+	AS <copy statement>
+```
+

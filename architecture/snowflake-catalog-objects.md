@@ -142,3 +142,28 @@ Only for accounts 20260125+
 ## Stored Procedures
 
 * `CREATE OR REPLACE PROCEDURE`
+
+| Create Stored Procedure When 								| Create UDF when 											|
+| --------------------------------------------------------	| ------------------------------------------------			|
+| migrating Stored Procedure from another system 			| Migrating UDF from another system 						|
+| administrative tasks (deleting old files, adding users) 	| callable function in SQL query that returns usable value 	|
+|  															| get value for every input row/group						|
+| DML statements (eg: `UPDATE`) 							| simple `SELECT` queries 									|
+
+
+## Streams
+
+* records tables' DML changes => CDC
+* takes initial snapshot of source object's every row by initializing a point in time i.e. **offset** as the current transactional version of the object
+* does **not store data**
+* stores only offset & records further changes
+* table schema changes
+
+
+## Standard streams
+
+* supported for 
+	* standard tables
+	* dynamic tables
+	* Snowflake managed Apache Iceberg tables
+	* 
