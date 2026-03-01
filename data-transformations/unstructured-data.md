@@ -105,3 +105,72 @@ SELECT FL_GET_STAGE_FILE_URL(f) from t1;
 * does not expire
 * call it in query, UDF or stored procedure
 * send to REST API, for file access (authenticate, authorize, redirect to file)
+
+## UDF for unstrucutred data
+
+
+```
+CREATE FUNCTION process_pdf(file STRING) RETURNS STRING
+LANGUAGE JAVA
+RUNTIME_VERSION = 11
+IMPORTS = ('@jars_stage/pdfbox-app-2.0.27.jar')
+HANDLER = 'PdfParser.readFile'
+AS
+$$
+import java.io.*;
+import org.apache.pdfbox.pdmodel.*
+import org.apache.pdfbox.text.*
+
+public class PdfParser {
+
+	public static String readFile(InputStream stream) throws IOException {
+		try(PDDocument doc = PDDocument.load(stream)) {
+			if(!document.isEncrypted()) {
+				var stripper = new PDFTextStripper();
+				return stripper.getText(doc);
+			}
+		}
+		return null;
+	}
+}
+
+
+ALTER STAGE data_stage REFRESH;
+
+SELECT process_pdf_func(BUILD_SCOPED_FILE_URL('@data_stage', '/myfile.pdf'));
+$$;
+```
+
+## Stored Proc for unstrucutred data
+
+```
+CREATE PROCEDURE process_pdf(file STRING) RETURNS STRING
+LANGUAGE JAVA
+RUNTIME_VERSION = 11
+IMPORTS = ('@jars_stage/pdfbox-app-2.0.27.jar')
+HANDLER = 'PdfParser.readFile'
+AS
+$$
+import java.io.*;
+import org.apache.pdfbox.pdmodel.*
+import org.apache.pdfbox.text.*
+
+public class PdfParser {
+
+	public static String readFile(InputStream stream) throws IOException {
+		try(PDDocument doc = PDDocument.load(stream)) {
+			if(!document.isEncrypted()) {
+				var stripper = new PDFTextStripper();
+				return stripper.getText(doc);
+			}
+		}
+		return null;
+	}
+}
+
+
+ALTER STAGE data_stage REFRESH;
+
+CALL process_pdf_func(BUILD_SCOPED_FILE_URL('@data_stage', '/myfile.pdf'));
+$$;
+```
