@@ -166,4 +166,40 @@ Only for accounts 20260125+
 	* standard tables
 	* dynamic tables
 	* Snowflake managed Apache Iceberg tables
-	* 
+	* directory tables
+	* views
+* tracks all DML changes
+* performs join on inserted & deleted rows to provide row level delta
+* cannot retrieve change data for geospatial data (use append-only streams instead)
+
+
+## Append only streams
+
+* supported for
+	* standarad tables
+	* dynamic tables
+	* Snowflake managed Apache Iceberg tables
+	* views
+* tracks inserts only
+* specifically returns inserted rows => performant for **ELT** (not ETL) & other such row insert reliant scenarios
+* cannot create append only stream in target account using a secondary object as source 
+
+## Insert only streams
+
+* supported for 
+	* external tables
+	* externally managed Apache Iceberg tables
+* overwritten or appended files are handled as new files
+
+## Data Retention
+
+* offset falls outside data retention period -> stream is *stale*
+* stale => historical & unconsumed change records are inaccessible
+* To continue tracking new changes, `CREATE STREAM` again.
+* To prevent staleness
+	* consume stream records within a DML statements during the table's retention period
+	* regularly consume change data before `STALE_AFTER` timestamp
+	* call `STREAM$STREAM_HAS_DATA` (it must return `FALSE` & stream must be empty)
+* if retention period < 14 days and stream unconsumed, Snowflake temporarily extends max 14 (irrespective of edition)
+	* configurable by `MAX_DATA_EXTENSION_TIME_IN_DAYS`
+* check if stream is stale using `DESCRIBE STREAM` or `SHOW STREAMS`
