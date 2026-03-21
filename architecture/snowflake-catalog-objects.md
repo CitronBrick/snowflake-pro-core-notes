@@ -160,7 +160,7 @@ Only for accounts 20260125+
 * table schema changes
 
 
-## Standard streams
+### Standard streams
 
 * supported for 
 	* standard tables
@@ -173,7 +173,7 @@ Only for accounts 20260125+
 * cannot retrieve change data for geospatial data (use append-only streams instead)
 
 
-## Append only streams
+### Append only streams
 
 * supported for
 	* standarad tables
@@ -184,14 +184,26 @@ Only for accounts 20260125+
 * specifically returns inserted rows => performant for **ELT** (not ETL) & other such row insert reliant scenarios
 * cannot create append only stream in target account using a secondary object as source 
 
-## Insert only streams
+### Insert only streams
 
 * supported for 
 	* external tables
 	* externally managed Apache Iceberg tables
 * overwritten or appended files are handled as new files
 
-## Data Retention
+### Streams on Views
+
+* supported for local & Snowflake Secured Data Sharing views & secure views
+* cannot track changes on materialized views
+* change tracking must be enabled in the underlying table
+
+#### Stream on View on Join
+
+* contains : delta(t1) x t2  + t1 x delta(t2) + delta(t1) x delta(t2)
+* above compute cost is not always linear
+
+
+### Data Retention
 
 * offset falls outside data retention period -> stream is *stale*
 * stale => historical & unconsumed change records are inaccessible
@@ -203,3 +215,82 @@ Only for accounts 20260125+
 * if retention period < 14 days and stream unconsumed, Snowflake temporarily extends max 14 (irrespective of edition)
 	* configurable by `MAX_DATA_EXTENSION_TIME_IN_DAYS`
 * check if stream is stale using `DESCRIBE STREAM` or `SHOW STREAMS`
+
+
+### Multiple Consumers
+
+* A stream stores only offset **not actual data**
+* The offset moves only when DML runs (including `CTAS` or `COPY INTO <location>`)
+* If multiple consumers (tasks, script etc.) consume the same stream, they cannot correctly capture their own change data,
+  since each of them move the offset
+* Recommendation: Create separate stream for each consumer. No significant cost
+
+
+### Changes clause
+
+* alternative to Streams
+* Read only
+* does not advance the offset
+* needs `AT`/`BEFORE` , `ENDS` (optional) clause
+* adds several hidden metadata columns
+
+### Stream limitations
+
+
+* not supported for external partitioned tables
+* not supported for Apache Iceberg tables with external catalog
+* cannot track changes on views with `GROUP BY`
+* When task is triggered by Stream on View, it will be also triggered during any changes to underlying tables
+* modifying nullability on a column, might cause stram query failure due to impermissible `NULL` values. The stream will enforce current nullability constraint. 
+
+## Tasks
+
+* can be scheduled
+* can be triggered by event
+* can run SQL & Stored Proc.
+* sequence of parallel/serial tasks = Task Graphs
+* by default, runs as a **system service** *decoupled* from the user
+
+1. Create task admin role
+
+```
+
+USE ROLE securityadmin;
+CREATE ROLE taskadmin;
+
+USE ROLE accountadmin;
+GRANT EXECUTE TASK, EXECUTE MANAGED TASK ON ACCOUNT TO ROLE taskadmin;
+
+USE ROLE securityadmin;
+GRANT ROLE taskadmin to ROLE myrole;
+```
+
+Owner role of task is deleted -> delter becomes new owner & task is paused.
+
+2. Create Task
+
+```
+CREATE [ OR REPLACE ] TASK [ IF NOT EXISTS ] <name>
+	[ WITH TAG ( <tag_name> = <tag_value)+ ] 
+	[ WITH CONTACT ( <purpose> = <contact_name>)+ ]
+	[ ( WAREHOUSE = <string> ) | ( USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = <string> ) ]
+	[ SCHEDULE = { <num>  ( HOURS | MINUTES | SECONDS ) } | USING CRON <expr> <time_zone> ]
+	[ CONFIG = <configuration_string> ]
+	[ OVERLAP_POLICY = { NO_OVERLAP | ALLOW_CHILD_OVERLAP | ALLOW_ALL_OVERLAP }] 
+	[ (<session_parameter> = <value>)+ ]
+	[ USER_TASK_TIMEOUT = <ms> ]
+	[ SUSPEND_TASK_AFTER_NUM_FAILURES = <num> ]
+	[ ERROR_INTEGRATION = <integration_name> ]
+	[ SUCCESS_INTEGRATION = <integration_name> ]
+	[ LOG_LEVEL = <level> ]
+	[ COMMENT = <string> ]
+	[ FINALIZE = <string> ]
+	[ TASK_AUTO_RETRY_ATTEMPTS = <num> ]
+	[ USER_TARGET_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = <num> ]
+	[ TARGET_COMPLETION_INTERVAL= '<num> ( HOURS | MINUTES | SECONDS )']
+	[ SERVERLESS_TASK_MIN_STATEMENT_SIZE = ( XSMALL | SMALL | MEDIUM | LARGE | XLARGE | XXLARGE ) ]
+	[ AFTER <string>+ ]
+	[ EXECUTE_AS_USER <user_name> ]
+	[ WHEN = <boolean_expr> ]
+AS <sql>
+```
