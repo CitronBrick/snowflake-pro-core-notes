@@ -2,7 +2,8 @@
 
 ## Stages
 
-A stage specifies where data files are stored (staged) so that the data can be loaded to a table
+A stage specifies where data files are stored (staged) so that the data can be loaded to a table.
+Both internal & external stages can include **directory tables** (containing catalog of files)
 
 1. Internal Stage
 	* User
@@ -53,5 +54,7 @@ A stage specifies where data files are stored (staged) so that the data can be l
 * to query/list/drop files, `OWNERSHIP` on table is needed
 
 
+### External Stages
 
-
+* storage location can be private/protected/public
+* cannot be stored in archival classes  viz AWS S3 Glacier Flexible Retrieval 

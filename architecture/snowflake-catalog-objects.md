@@ -294,3 +294,44 @@ CREATE [ OR REPLACE ] TASK [ IF NOT EXISTS ] <name>
 	[ WHEN = <boolean_expr> ]
 AS <sql>
 ```
+
+* `USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE` : For serverless tasks, applied to 1st task run before any task history is available
+* `OVERLAP_POLICY`
+	* `NO_OVERLAP` : no parallelism
+	* `ALLOW_CHILD_OVERLAP`: root task can rerun when child task (in task graph) is running
+	* `ALLOW_ALL_OVERLAP` : unlimited true parallelism
+* USER_TASK_TIMEOUT : default 1 hour
+* SUSPEND_TASK_AFTER_NUM_FAILURES : default 10. max 0 = unlimited
+
+
+## Pipes
+
+* 1st class Snowflake objects containing a `COPY` statement
+* can be paused/resumed
+
+```
+CREATE [ OR REPLACE ] PIPE [ IF NOT EXISTS ] <name>
+	[ AUTO_INGEST = [ TRUE | FALSE ] ]
+	[ ERROR_INTEGRATION = <integration_name> ]
+	[ AWS_SNS_TOPIC = '<string>' ]
+	[ INTEGRATION = '<string>' ]
+	[ COMMENT = '<string>' ]
+	AS <copy_statement>
+```
+
+`<copy_statement>` can be 
+* A staged location : `COPY INTO myTable FROM @heritage`
+* A streaming location : `COPY INTO myTable FROM ( SELECT ... FROM TABLE(DATA_SOURCE( TYPE => 'STREAMING') ))`
+
+## Shares 
+
+* share selected objects between Snowflake accounts
+* **0** data copied. Only Service layer & metadata store used
+* only compute charges, no data charges
+* can be shared across clouds & regions
+* can include data from multiple databases
+* is immediately available to a consumer when it's added to the share
+* can be converted to a listing
+
+1. Provider creates share in their account & grants access to specific objects
+2. A read only database is created on Consumer side 
