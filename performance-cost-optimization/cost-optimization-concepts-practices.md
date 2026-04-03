@@ -26,3 +26,22 @@
 For the remedies 1-5, consider:
 1. If table is used for Disaster Recovery
 2. If table is used for Data sharing to other Snowflake accounts
+
+
+#### Search Optimization paths (EE+)
+
+* improves lookup of lookup & analytical queries
+* search access path tracks which column values reside in which micropartitions
+* maintenance service maintains after DML shown, as in `search_optimization_progress` of `SHOW TABLES`
+* `SELECT SYSTEM$ESTIMATE_SEARCH_OPTIMIZATION_COST('<table_without_search_opt>')`
+
+##### Cost reduction
+
+* choose tables & columns for search optimization
+* `delete` old data for tables that are supposed to contain recent data only
+* batch together `insert`, `merge` , `update`
+* reclustering
+	1. drop the search optimization property
+	2. recluster
+	3. add back search optimization property
+* substring & variant equality: evaluate `SYSTEM$ESTIMATE_SEARCH_OPTIMIZATION_COST` beforehand

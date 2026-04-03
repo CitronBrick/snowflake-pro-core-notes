@@ -72,3 +72,37 @@
 * if cardinality is too high -> use column expression (eg: timestamp -> date, truncating numbers)
 * specify clustering columns from **low to high** cardinality
 * if text key is used for clustering -> Only 1st 5-6 bytes will be used
+
+
+## Data Monitoring in Snowflake
+
+### `STORAGE_USAGE` view
+
+
+* `SNOWFLAKE.ACCOUNT_USAGE.STORAGE_USAGE` or `SNOWFLAKE.READER_ACCOUNT_USAGE.STORAGE_USAGE`
+* displays average of daily data storage in bytes for last 365 days, across account
+* includes both database & stage files
+* Columns:
+	* `USAGE_DATE` (local time)
+	* `STORAGE_BYTES` : includes Time Travel bytes
+	* `STAGE_BYTES` : bytes in internal storage
+	* `FAILSAFE_BYTES`
+	* `HYBRID_TABLE_STORAGE_BYTES`
+	* `ARCHIVE_STORAGE_COOL_BYTES`
+	* `ARCHIVE_STORAGE_COLD_BYTES` : includes active/fail-safe/Time Travel bytes
+	* `ARCHIVE_STORAGE_RETRIEVE_TEMP_BYTES` : bytes used in standard storage tier during cold storage tier retrieval
+* latency
+	* <= 2 hours in `ACCOUNT_STORAGE`
+	* <= 24 hours in `READER_ACCOUNT_USAGE`
+
+### `BACKUP_STORAGE_USAGE` view
+
+* stores information about backups (all Snowflake editions. Business Critical Edition includes retention lock & backup with legal hold)
+* same table may be included in multiple table/schema/database backups
+* Columns
+	* `LOGICAL_BYTES`
+	* `INCREMENTAL_BYTES_FROM_PREVIOUS_BACKUP` : nb of micropartition bytes present in backup but absent in previous backup
+	* `DECREMENTAL_BYTES_FROM_PREVIOUS_BACKUP` : nb of micropartition bytes absent in backup but present in previous backup 
+	* 0 is the value for above 2 columns for the oldest backup
+* latency <= 6 hours
+
