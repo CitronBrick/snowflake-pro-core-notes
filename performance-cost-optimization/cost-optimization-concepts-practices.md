@@ -57,6 +57,8 @@ For the remedies 1-5, consider:
 * Amount charged depends on
 	* region (US or EU)
 	* account type (Capacity or On-demand)
+* Temporary  / Transient tables are charged when they're alive
+
 
 ##### Storage costs : Database
 
@@ -68,6 +70,15 @@ For the remedies 1-5, consider:
 	* Snowsight: Catalog -> Database Explorer -> <Database> -> Tables
 	* `SHOW TABLES`
 	* best:  `TABLE_STORAGE_METRICS` view in Snowflake Information Schema & `ACCOUNT_USAGE` 
+
+##### Storage costs: Hybrid tables
+
+* charged Gb/month
+* row store copy is **costlier** than traditional Snowflake storage
+* CDP same charges as Standard tables
+
+
+
 
 ##### Storage costs: Time Travel & Fail safe
 
@@ -82,6 +93,13 @@ For the remedies 1-5, consider:
 * 0 copy clone does not consume storage costs initially for standard tables
 * subsequent changes & CDP consume storage
 * Hybrid table cloning consumes both storage & compute costs
+
+##### Storage costs: Cross cloud Auto fulfillment
+
+* provides data to other cloud regios without manual data replication
+* data transfer cost
+* Egress Cost Optimizer saves cost
+
 
 #### Compute Costs
 
@@ -125,6 +143,156 @@ For the remedies 1-5, consider:
 
 ## Trans-region data transfer Cost considerations
 
+* Database & Share replication : all accounts
+* Other object replication & Failover : BCE+
 
-## Replication
 
+
+
+### Replication group 
+
+* defined object collection in source account that are replicated to 1+ target accounts within same organization
+* readonly in target
+
+### Failover group
+
+* replication group that can also failover
+* secondary failover groups are read only in target
+* primary failover group is read-write in target
+* any secondary can be promoted to primary in target
+
+### Data transfer costs
+
+* data transfer due to initial & subsequent sync operations are charged by cloud provider
+* applied even if transfer
+
+### Compute costs
+
+* Snowflake compute is used for 
+	1. metadata & data delta calculation 
+	2. for actual copy
+
+
+### Storage costs
+
+* stardard storage costs in target account
+
+### Misc 
+
+* costs are applied even if transfer fails. 
+* Partial data copied stays in target for 14 days
+* In target account, bg auto tasks for materialized views & search optimization also consume credits
+
+### Check costs
+
+* Snowsight: Admin -> Cost management 
+* `information_schema.replication_group_usage_history`
+```
+SELECT (end_time - start_time) as duration, credits_used, bytes_transferred
+FROM TABLE(
+	information_schema.replication_group_usage_history(
+		date_range_start => DATE_ADD('date', -7, CURRENT_DATE())
+	)
+);
+```
+* `SNOWFLAKE.ACCOUNT_USAGE.REPLICATION_GROUP_USAGE_HISTORY`
+
+```
+SELECT (end_time - start_time) as duration, credits_used, bytes_transferred
+FROM snowflake.account_usage.replication_group_usage_history
+WHERE start_time >= DATE_TRUNC('month', CURRENT_DATE());
+```
+
+
+## Attributing cost
+
+* attribute cost to different departments within an organization
+* **Object tags** : associate resources and users with departments
+* **Query tags**: associate queries with departments (when same app queries on behalf of users belonging to multiple departments)
+* Scenarios
+	* Resources used by 1 department: use object tags on warehouses to attribute costs to department
+	* Resource are shared by users from multiple departments: use object tags on users to associate user <-> department.
+	* Apps/Wokflows shared by users from multiple departments: query tag for each query which identifies the user's department.
+* Workflow
+	1. Create tags
+	2. Replicating tag database
+	3. Tagging resources & users
+
+### Create tags
+
+```
+use role tag_admin;
+create database cost_managmeent;
+create schema tags;
+
+create tag cost_center ALLOWED_VALUES 'finance', 'marketing', 'engineering', 'product';
+```
+
+#### Replicating tag database (transfer tags to different account in same organization)
+
+* In source account 
+
+``` 
+CREATE REPLICATION GROUP cost_management_repl_group
+	OBJECT_TYPE = DATABASES
+	ALLOWED_DATABASES = cost_management
+	ALLOWED_ACCOUNTS = my_org.acct_1, my_org.acct_2
+	REPLICATION_SCHEDULE = '10 MINUTE';
+```
+
+* In each target  account
+
+Create secondary replica group & refresh from primary group
+
+```
+CREATE REPLICATION GROUP cost_management_repl_group 
+	AS REPLICA OF my_org.my_acct.cost.cost_management_repl_group;
+
+ALTER REPLICATION GROUP cost_management_repl_group REFRESH;
+```
+
+#### Tagging resources/ users
+
+``` 
+ALTER WAREHOUSE wh1 SET TAG cost_management.tags.cost_center = 'SALES';
+ALTER WAREHOUSE wh2 SET TAG cost_management.tags.cost_center = 'FINANCE';
+
+ALTER USER finance_user SET TAG cost_management.tags.cost_center = 'FINANCE'
+```
+
+### Viewing cost by tag
+
+
+#### Viewing cost by tag within account
+
+##### TAG_REFERENCES 
+
+* 2 hour latency for view
+* tag inheritance not included
+
+```
+SELECT object_database||'.'||object_schema||'.'||object_name as obj
+FROM SNOWFLAKE.ACCOUNT_USAGE.TAG_REFERENCES
+WHERE TAG_NAME = 'cost_center' AND TAG_VALUE='FINANCE';
+```
+
+##### WAREHOUSE_METERING
+
+* upto 365 DAYS
+* latency 3 hours
+
+```
+SELECT sum(credits_attributed_compute_queries) AS non_idle_wh_time
+FROM SNOWFLAKE.ACCOUNT_USAGE.WAREHOUSE_METERING
+GROUP BY warehouse_name;
+```
+
+##### QUERY_ATTRIBUTION_HISTORY
+
+* upto 365 days
+* latency upto 8 hours
+
+```
+SELECT query_id, query_tag, credits_attributed_compute 
+FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_ATTRIBUTION_HISTORY;
+```
