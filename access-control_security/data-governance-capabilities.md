@@ -28,3 +28,53 @@
 
 ## Organizations
 
+## Secure Views
+
+* Non-secure views can expose underlying table structure, which may not be desirable
+* Non-secure views' internal optimizations might expose underlying data through UDFs 
+* Secure views hide underlying table structure & do not have internal optimizations
+* Secure view internals are hidden in the **Query Profile even for owners** (non-owners may have access to owner's Query Profile)
+* Secure views should not be used for query convenience views
+* Secure views can have redacted error messages
+* To create: `CREATE SECURE VIEW` or `CREATE SECURE MATERIALIZED VIEW` 
+* To make unsecure : `ALTER VIEW <viewname> UNSET SECURE` or `ALTER MATERIALIZED VIEW <viewname> UNSET SECURE`
+* To make secure : `ALTER VIEW <viewname> SET SECURE` or `ALTER MATERIALIZED VIEW <viewname> SET SECURE`
+
+
+### Make non secure views expose data
+
+1. Consider an user who has access to only view red widgets
+
+2. `SELECT * from widgets WHERE 1/IFF(color='Purple',0,1) = 1;`
+
+3. The above code will fail with a 0 division error if there are purple widgets, making the user aware of their presence.
+
+
+
+
+### Check if view is secure
+
+* Information Schema
+	```
+	SELECT table_catalog, table_schema, table_name, is_secure
+	FROM my_db.information_schema.views WHERE table_name='MyView';
+	```
+* Account_Usage
+	```
+	SELECT table_catalog, table_schema, table_name, is_secure
+	FROM snowflake.account_usage.views WHERE table_name='MyView';
+	```
+* Show
+	```
+	SHOW VIEWS LIKE 'my_view';
+	SHOW MATERIALIZED VIEWS LIKE 'my_view';
+	```
+
+
+#### View Secure views Definition
+
+* Not possible via:
+	* `SHOW VIEWS` / `SHOW MATERIALIZED VIEWS`
+	* `GET_DDL('VIEW','my_db.my_schema.my_view')`
+	* `information_schema.views`
+* c
