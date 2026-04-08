@@ -82,3 +82,47 @@
 		* `IMPORTED PRIVILEGES` on any shared database (eg: `SNOWFLAKE`)
 		* `ACCOUNTADMIN` role
 		* `SNOWFLAKE.OBJECT_VIEWER` role (least privilege) 
+
+
+## Secure UDFS & Stored Procedures
+
+* Visible for unauthorized
+	* Parameter types
+	* Return type
+	* Handler language
+	* Null handling
+	* Volatility
+* Hidden for unauthorized
+	* body
+	* import list
+	* handler name
+	* packages list
+* Hides from
+	* `SHOW FUNCTIONS`
+	* `SHOW USER FUNCTIONS`
+	* `DESCRIBE FUNCTION`
+	* Information schema functions
+	* `SHOW PROCEDURES`
+	* `DESCRIBE PROCEDURE`
+	* Information schema procedures
+	* Query Profile
+	* `GET_DDL`
+
+### Pushdown & leaking
+
+## Access history
+
+* requires EE+
+* tracks
+	* `INSERT`
+	* `UPDATE`
+	* `DELETE`
+	* `COPY`
+* `ACCESS_HISTORY` view in `ACCOUNT_USAGE` & `ORGANIZATION` schemas
+* 1 row / SQL statement
+	* source columns
+	* projected columns
+	* unprojected columns (eg: `where` columns absent in `select`)
+	* user name
+	* `ORGANIZATION` schema's `ACCESS_HISTORY` has additional info on 
+		* Organizational listing
