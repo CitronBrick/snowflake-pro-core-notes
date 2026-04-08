@@ -77,4 +77,8 @@
 	* `SHOW VIEWS` / `SHOW MATERIALIZED VIEWS`
 	* `GET_DDL('VIEW','my_db.my_schema.my_view')`
 	* `information_schema.views`
-* c
+* Posssible:
+	* In `ACCOUNT_USAGE.VIEWS`, users with any of the following privileges can view
+		* `IMPORTED PRIVILEGES` on any shared database (eg: `SNOWFLAKE`)
+		* `ACCOUNTADMIN` role
+		* `SNOWFLAKE.OBJECT_VIEWER` role (least privilege) 
