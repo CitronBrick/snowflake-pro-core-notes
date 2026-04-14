@@ -25,7 +25,7 @@
 ## SPECIFIC SELECT COMMANDS
 
 * choose only columns you need
-
+* **Pushdown** : Snowflake pushes filtering into micropartition scan or before data load
 
 ## Table clustering
 

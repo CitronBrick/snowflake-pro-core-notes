@@ -23,7 +23,7 @@ Gen 2 not available in :
 ### Interactive 
 
 * optimized for low-latency interactive workloads
-* uses additional metadata & indexes of underlying interactive tables to accelerate queries
+* uses additional metadata & indexes of underlying *interactive tables* to accelerate queries
 * run continuously
 * serves high volume of concurrent queries
 
@@ -61,7 +61,7 @@ CREATE WAREHOUSE so_warehouse WITH
 ## Multi-cluster warehouse
 
 * max nb cluster > 1
-* In Snowsight MAX_CLUSTER_COUNT is 10
+* In **Snowsight** MAX_CLUSTER_COUNT is 10
 * For `MAX_CLUSTER_COUNT` > 10, use `CREATE WAREHOUSE` or `ALTER WAREHOUSE`
 * 2 modes
 	* Maximized
@@ -144,7 +144,6 @@ CREATE WAREHOUSE so_warehouse WITH
 | ----------------------	| --------		| ---------------------------------------------------------------------	|
 | CREATE WAREHOUSE 			| Account 		| only SYSADMIN or higher has this privilege by default. can be granted to additional roles |
 | OWNERSHIP					| Warehouse 	| Required to run `create or alter warehouse` on existing wh. can be granted to others via `grant ownership`	|
-
 
 
 
