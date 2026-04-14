@@ -313,3 +313,9 @@ FROM persons p,
 ```
 
 
+## Type Predicates
+
+`IS_ARRAY`,`IS_BINARY`, `IS_VARCHAR`, `IS_DATE`,`IS_DATE_VALUE`, `IS_NULL_VALUE` (JSON null),
+`IS_OBJECT`
+
+Each of the above functions accepts a variant & returns a boolean.
