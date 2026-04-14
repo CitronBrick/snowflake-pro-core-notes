@@ -227,3 +227,70 @@ CALL myProc('table_a', 'table_b', 5)
 * modifying column to be `NOT NULL` can cause stream queries to fail with stream returns NULL values. Current schema vs historical data
 * task triggered by stream on views, changes to tables will trigger task, irrespective of joins, aggregations or filters.
 * unsupported on partitioned external tables or partitioned Iceberg tables managed by external catalog
+
+
+## Tasks
+
+* can be scheduled
+* can be triggered by event
+* can run SQL & Stored Proc.
+* sequence of parallel/serial tasks = Task Graphs
+* by default, runs as a **system service** *decoupled* from the user
+
+1. Create task admin role
+
+```
+
+USE ROLE securityadmin;
+CREATE ROLE taskadmin;
+
+USE ROLE accountadmin;
+GRANT EXECUTE TASK, EXECUTE MANAGED TASK ON ACCOUNT TO ROLE taskadmin;
+
+USE ROLE securityadmin;
+GRANT ROLE taskadmin to ROLE myrole;
+```
+
+Owner role of task is deleted -> delter becomes new owner & task is paused.
+
+2. Create Task
+
+```
+CREATE [ OR REPLACE ] TASK [ IF NOT EXISTS ] <name>
+	[ WITH TAG ( <tag_name> = <tag_value)+ ] 
+	[ WITH CONTACT ( <purpose> = <contact_name>)+ ]
+	[ ( WAREHOUSE = <string> ) | ( USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = <string> ) ]
+	[ SCHEDULE = { <num>  ( HOURS | MINUTES | SECONDS ) } | USING CRON <expr> <time_zone> ]
+	[ CONFIG = <configuration_string> ]
+	[ OVERLAP_POLICY = { NO_OVERLAP | ALLOW_CHILD_OVERLAP | ALLOW_ALL_OVERLAP }] 
+	[ (<session_parameter> = <value>)+ ]
+	[ USER_TASK_TIMEOUT = <ms> ]
+	[ SUSPEND_TASK_AFTER_NUM_FAILURES = <num> ]
+	[ ERROR_INTEGRATION = <integration_name> ]
+	[ SUCCESS_INTEGRATION = <integration_name> ]
+	[ LOG_LEVEL = <level> ]
+	[ COMMENT = <string> ]
+	[ FINALIZE = <string> ]
+	[ TASK_AUTO_RETRY_ATTEMPTS = <num> ]
+	[ USER_TARGET_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = <num> ]
+	[ TARGET_COMPLETION_INTERVAL= '<num> ( HOURS | MINUTES | SECONDS )']
+	[ SERVERLESS_TASK_MIN_STATEMENT_SIZE = ( XSMALL | SMALL | MEDIUM | LARGE | XLARGE | XXLARGE ) ]
+	[ AFTER <string>+ ]
+	[ EXECUTE_AS_USER <user_name> ]
+	[ WHEN = <boolean_expr> ]
+AS <sql>
+```
+
+* `USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE` : For serverless tasks, applied to 1st task run before any task history is available
+* `OVERLAP_POLICY`
+	* `NO_OVERLAP` : no parallelism
+	* `ALLOW_CHILD_OVERLAP`: root task can rerun when child task (in task graph) is running
+	* `ALLOW_ALL_OVERLAP` : unlimited true parallelism
+* USER_TASK_TIMEOUT : default 1 hour
+* SUSPEND_TASK_AFTER_NUM_FAILURES : default 10. max 0 = unlimited
+
+
+3. Run task manually
+
+`EXECUTE TASK <taskname> USING CONFIG=<config>`
+`EXECUTE TASK <taskname> RETRY LAST`
