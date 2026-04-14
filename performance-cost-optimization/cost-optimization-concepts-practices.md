@@ -296,3 +296,11 @@ GROUP BY warehouse_name;
 SELECT query_id, query_tag, credits_attributed_compute 
 FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_ATTRIBUTION_HISTORY;
 ```
+
+## Budgets
+
+* budgets can be configured to automatically call a stored proc when spending threshold is reached
+* budgets send notifications (> stored proc)
+* account budget vs custom budget for specific objects
+* threshold checking happens **only at refresh intervals** 
+* default refresh interval : 6.5 hours

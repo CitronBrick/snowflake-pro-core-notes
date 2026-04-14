@@ -28,6 +28,8 @@
 
 ## Organizations
 
+* Tags on organization account
+
 ## Secure Views
 
 * Non-secure views can expose underlying table structure, which may not be desirable
