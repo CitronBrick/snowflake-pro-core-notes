@@ -70,6 +70,8 @@ CREATE [OR REPLACE]  PIPE [IF NOT EXISTS] <name>
 	AS <copy statement>
 ```
 
+Snowpipe recommends loading 100-250mb or more uncompressed data.
+
 ## CREATE EXTERNAL TABLE
 
 ```

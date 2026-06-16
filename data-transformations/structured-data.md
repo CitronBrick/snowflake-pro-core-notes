@@ -294,3 +294,56 @@ AS <sql>
 
 `EXECUTE TASK <taskname> USING CONFIG=<config>`
 `EXECUTE TASK <taskname> RETRY LAST`
+
+
+## 3 Data types
+
+* Map
+* Object (Strucutred)
+* Array (Strucutred)
+
+### Map
+
+* key cannot be null
+* value can be null
+
+```
+create or replace table tab(mymap MAP(VARCHAR, VARCHAR))
+
+insert into tab 
+	select {'key1':'val1', 'key2': 'val2'}::MAP(VARCHAR, VARCHAR)
+```
+
+* **Object constant** needs `SELECT` not `VALUES`
+* **Object constant** specifies **semi structured object** => *Cast* necessary
+
+### Array
+
+```
+CREATE TABLE tab (
+  nums ARRAY(NUMBER)
+);
+
+CREATE TABLE tab2 (
+  nums ARRAY(NUMBER NOT NULL)
+);
+
+insert into tab 
+	select [3,2,1]::Array(Number)
+```
+
+### Object
+
+* key must be unique
+* key order is important
+* no keys is possible
+* value may be nulll
+
+```
+CREATE TABLE tab (
+  addr Object(street varchar, pincode varchar)
+);
+
+insert into tab 
+	select {'street':'Mortimer Street', 'pincode':'z56232'}::Object(street VARCHAR, pincode VARCHAR)
+```
